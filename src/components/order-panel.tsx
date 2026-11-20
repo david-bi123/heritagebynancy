@@ -3,7 +3,12 @@
 import { useState } from "react";
 import type { StorefrontProduct } from "@/lib/data";
 import { formatPrice, cn } from "@/lib/utils";
-import { buildNotifyMessage, buildProductOrderMessage, buildWaLink } from "@/lib/whatsapp";
+import {
+  buildNotifyMessage,
+  buildProductOrderMessage,
+  buildWaLink,
+  isWhatsAppConfigured,
+} from "@/lib/whatsapp";
 import { ArrowRightIcon, CheckIcon, ShieldCheckIcon, SparkleIcon, TruckIcon, WhatsAppIcon } from "@/components/icons";
 
 export function OrderPanel({
@@ -11,41 +16,44 @@ export function OrderPanel({
   businessName,
   currency,
   whatsappNumber,
+  siteUrl,
 }: {
   product: StorefrontProduct;
   businessName: string;
   currency: string;
   whatsappNumber: string;
+  siteUrl: string;
 }) {
   const [sizeIndex, setSizeIndex] = useState(
     Math.max(0, product.sizes.length - 1), // default to the largest bottle
   );
   const [quantity, setQuantity] = useState(1);
 
-  const waConfigured = whatsappNumber.trim().length > 0;
   const status = product.stock <= 0 ? "out" : product.stock <= 3 ? "low" : "in";
   const selected = product.sizes[sizeIndex] ?? product.sizes[0];
   const total = selected ? selected.price * quantity : 0;
 
-  const openWhatsApp = (kind: "order" | "notify") => {
-    const origin = typeof window !== "undefined" ? window.location.origin : "";
-    const productUrl = `${origin}/shop/${product.slug}`;
-    const message =
-      kind === "order"
-        ? buildProductOrderMessage({
-            settings: { businessName, currency },
-            productName: product.name,
-            brand: product.brand,
-            concentration: product.concentration,
-            sizeLabel: selected?.label ?? "",
-            unitPrice: selected?.price ?? 0,
-            quantity,
-            productUrl,
-          })
-        : buildNotifyMessage({ businessName }, product.name, productUrl);
-    const link = buildWaLink(whatsappNumber, message);
-    if (link) window.open(link, "_blank", "noopener,noreferrer");
-  };
+  // A real link (not a JS popup) so choosing a size and tapping the CTA opens
+  // the owner's WhatsApp directly, including on mobile and without hydration.
+  const productUrl = `${siteUrl.replace(/\/+$/, "")}/shop/${product.slug}`;
+  const orderLink = buildWaLink(
+    whatsappNumber,
+    buildProductOrderMessage({
+      settings: { businessName, currency },
+      productName: product.name,
+      brand: product.brand,
+      concentration: product.concentration,
+      sizeLabel: selected?.label ?? "",
+      unitPrice: selected?.price ?? 0,
+      quantity,
+      productUrl,
+    }),
+  );
+  const notifyLink = buildWaLink(
+    whatsappNumber,
+    buildNotifyMessage({ businessName }, product.name, productUrl),
+  );
+  const waConfigured = isWhatsAppConfigured({ whatsappNumber }) && Boolean(orderLink);
 
   return (
     <div className="rounded-3xl border border-blush/60 bg-white p-5 ring-1 ring-rose/5 shadow-[var(--shadow-card)] sm:p-6">
@@ -132,14 +140,15 @@ export function OrderPanel({
 
       {/* CTA */}
       {status !== "out" ? (
-        waConfigured ? (
-          <button
-            type="button"
-            onClick={() => openWhatsApp("order")}
+        waConfigured && orderLink ? (
+          <a
+            href={orderLink}
+            target="_blank"
+            rel="noopener noreferrer"
             className="mt-5 flex h-14 w-full items-center justify-center gap-3 rounded-2xl bg-wa text-sm font-bold uppercase tracking-[0.2em] text-white shadow-[0_16px_40px_-12px_rgb(18_140_126/0.7)] transition-all hover:bg-wa-dark hover:shadow-[0_20px_48px_-12px_rgb(18_140_126/0.8)]"
           >
             <WhatsAppIcon className="h-6 w-6" /> Order on WhatsApp
-          </button>
+          </a>
         ) : (
           <div className="relative mt-5 overflow-hidden rounded-2xl border border-blush/70 bg-gradient-to-br from-petal/80 via-porcelain to-petal/50 px-5 py-5 text-center">
             <span className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-white text-rose-deep shadow-sm ring-1 ring-blush/70">
@@ -160,14 +169,15 @@ export function OrderPanel({
             </a>
           </div>
         )
-      ) : waConfigured ? (
-        <button
-          type="button"
-          onClick={() => openWhatsApp("notify")}
+      ) : waConfigured && notifyLink ? (
+        <a
+          href={notifyLink}
+          target="_blank"
+          rel="noopener noreferrer"
           className="mt-5 flex h-14 w-full items-center justify-center gap-3 rounded-2xl border border-fig-lift bg-fig text-sm font-bold uppercase tracking-[0.2em] text-champagne-light transition-colors hover:bg-fig-lift"
         >
           <WhatsAppIcon className="h-5 w-5" /> Notify me on WhatsApp
-        </button>
+        </a>
       ) : (
         <p className="mt-5 rounded-2xl border border-rose-deep/30 bg-rose-soft/50 px-4 py-4 text-center text-xs font-semibold uppercase tracking-[0.2em] text-rose-deep">
           Currently out of stock

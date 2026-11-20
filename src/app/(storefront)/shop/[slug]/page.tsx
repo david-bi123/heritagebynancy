@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getCategories, getProductBySlug, getRelatedProducts, startingPrice } from "@/lib/data";
 import { getSettings } from "@/lib/settings";
+import { SITE_URL } from "@/lib/site-url";
 import { formatPrice } from "@/lib/utils";
 import { ProductGallery } from "@/components/product-gallery";
 import { OrderPanel } from "@/components/order-panel";
@@ -179,6 +180,7 @@ export default async function ProductPage({
                   businessName={settings.businessName}
                   currency={settings.currency}
                   whatsappNumber={settings.whatsappNumber}
+                  siteUrl={SITE_URL}
                 />
               </div>
             </div>
