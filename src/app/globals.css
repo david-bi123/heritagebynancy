@@ -1,26 +1,182 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  /* Heritage By Nancy — rose atelier identity */
+  --color-porcelain: #fbf6f5; /* page background, warm pink-tinted white */
+  --color-petal: #f5eae7; /* soft pink section fill */
+  --color-petal-deep: #ecdeda; /* deeper blush for borders/chips */
+  --color-blush: #e3cbc6; /* hairlines on light backgrounds */
+
+  --color-fig: #221722; /* deep aubergine — dark sections */
+  --color-fig-raise: #2c202b; /* raised dark surface */
+  --color-fig-lift: #382a34; /* hover dark surface */
+
+  --color-rose: #b76e79; /* signature dusty rose */
+  --color-rose-deep: #96555f; /* rose for small text / contrast */
+  --color-rose-light: #e2b6bd; /* rose on dark backgrounds */
+  --color-rose-soft: #f3dede; /* soft rose chip background */
+
+  --color-champagne: #c8a15a; /* champagne gold — sparkle accent */
+  --color-champagne-light: #e3c878;
+  --color-champagne-deep: #a8843a;
+
+  --color-wa: #1faa53;
+  --color-wa-dark: #128c7e;
+
+  --font-display: var(--font-playfair), "Georgia", serif;
+  --font-sans: var(--font-jost), "Avenir Next", "Segoe UI", sans-serif;
+
+  --shadow-soft: 0 28px 70px -28px rgb(34 23 34 / 0.5);
+  --shadow-card: 0 16px 40px -18px rgb(34 23 34 / 0.4);
+  --shadow-lift: 0 30px 60px -22px rgb(150 85 95 / 0.45);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-porcelain);
+  color: var(--color-fig);
+}
+
+/* Subtle grain for hero / dark sections */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.08;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)' opacity='0.6'/%3E%3C/svg%3E");
+}
+
+/* Champagne hairline rule for dark sections */
+.gold-rule {
+  background: linear-gradient(90deg, transparent, var(--color-champagne), transparent);
+  height: 1px;
+}
+
+/* Rose hairline rule for light sections */
+.rose-rule {
+  background: linear-gradient(90deg, transparent, var(--color-rose), transparent);
+  height: 1px;
+}
+
+
+::selection {
+  background: var(--color-rose);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-rose-deep);
+  outline-offset: 2px;
+}
+
+/* Slow gold gleam travelling around the hero arch */
+.arch-shine {
+  position: absolute;
+  inset: 10px;
+  border-radius: 9999px 9999px 0 0;
+  padding: 1px;
+  pointer-events: none;
+  background: linear-gradient(115deg, transparent 36%, rgb(227 200 120 / 0.9) 50%, transparent 64%);
+  background-size: 260% 100%;
+  animation: arch-shine 8s linear infinite;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask-composite: exclude;
+}
+@keyframes arch-shine {
+  from { background-position: 170% 0; }
+  to { background-position: -130% 0; }
+}
+
+/* Slow cinematic drift on editorial imagery */
+@keyframes kenburns {
+  from { transform: scale(1.02) translate3d(0, 0, 0); }
+  to { transform: scale(1.12) translate3d(-1.5%, -1%, 0); }
+}
+.kenburns {
+  animation: kenburns 24s ease-in-out infinite alternate;
+}
+
+/* Warm grading wash shared by photographic panels */
+.photo-grade {
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 10%, rgb(183 110 121 / 0.28), transparent 62%),
+    linear-gradient(to top, rgb(34 23 34 / 0.85) 0%, rgb(34 23 34 / 0.08) 55%, rgb(34 23 34 / 0.25) 100%);
+}
+
+/* Hairline frame used inside image panels */
+.inner-hairline {
+  position: absolute;
+  inset: 0.75rem;
+  border: 1px solid rgb(255 255 255 / 0.18);
+  pointer-events: none;
+}
+
+/* Discreet scrollbars inside the console */
+.console-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(183 110 121 / 0.45) transparent;
+}
+.console-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.console-scroll::-webkit-scrollbar-thumb {
+  background: rgb(183 110 121 / 0.4);
+  border-radius: 999px;
+}
+.console-scroll::-webkit-scrollbar-track { background: transparent; }
+
+/* Brand ticker */
+.marquee-wrap {
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+.marquee {
+  display: inline-block;
+  animation: marquee 28s linear infinite;
+}
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-33.3333%); }
+}
+
+/* Slow float for decorative hero badge */
+@keyframes float-y {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+.float-y {
+  animation: float-y 6s ease-in-out infinite;
+}
+
+/* Gentle twinkle for hero sparkle accents */
+@keyframes twinkle {
+  0%, 100% { opacity: 0.45; transform: scale(0.92) rotate(0deg); }
+  50% { opacity: 1; transform: scale(1.08) rotate(8deg); }
+}
+.twinkle {
+  animation: twinkle 5s ease-in-out infinite;
+}
+
+/* Staggered entrance for hero content */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(22px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.rise {
+  animation: rise 0.9s cubic-bezier(0.22, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .marquee, .float-y, .twinkle, .rise, .arch-shine, .kenburns { animation: none; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
